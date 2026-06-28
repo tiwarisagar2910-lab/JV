@@ -8,7 +8,9 @@ let DATA = {
   dashboard: []
 };
 
-const tabs = ["Dashboard", "Events", "Tasks", "Accommodation", "Guests", "Vendors", "Budget"];
+let DEBUG = [];
+
+const tabs = ["Dashboard", "Events", "Tasks", "Accommodation", "Guests", "Vendors", "Budget", "Debug"];
 
 function initNav() {
   const nav = document.getElementById("nav");
@@ -32,6 +34,7 @@ function initNav() {
 
 async function loadDashboard() {
   try {
+    DEBUG = [];
     document.getElementById("syncStatus").textContent = "Syncing...";
 
     const entries = Object.entries(CONFIG.sheets);
@@ -46,12 +49,16 @@ async function loadDashboard() {
     document.getElementById("errorBox").style.display = "none";
 
     renderAll();
+    renderDebug();
   } catch (error) {
     document.getElementById("syncStatus").textContent = "Sync failed";
 
     const box = document.getElementById("errorBox");
     box.style.display = "block";
     box.textContent = error.message;
+
+    DEBUG.push({ type: "error", message: error.message });
+    renderDebug();
   }
 }
 
@@ -64,14 +71,20 @@ async function loadSheet(sheetName) {
     "&t=" +
     Date.now();
 
-  const response = await fetch(url);
+  DEBUG.push({ type: "request", sheetName, url });
+
+  const response = await fetch(url, { cache: "no-store" });
 
   if (!response.ok) {
     throw new Error("Could not load sheet tab: " + sheetName + " (HTTP " + response.status + ")");
   }
 
   const text = await response.text();
-  return parseGoogleVisualizationResponse(text, sheetName);
+  const rows = parseGoogleVisualizationResponse(text, sheetName);
+
+  DEBUG.push({ type: "success", sheetName, rowCount: rows.length });
+
+  return rows;
 }
 
 function parseGoogleVisualizationResponse(text, sheetName) {
@@ -85,7 +98,9 @@ function parseGoogleVisualizationResponse(text, sheetName) {
   const json = JSON.parse(text.slice(start, end + 1));
 
   if (json.status === "error") {
-    const message = json.errors && json.errors[0] ? json.errors[0].detailed_message || json.errors[0].message : "Unknown error";
+    const message = json.errors && json.errors[0]
+      ? json.errors[0].detailed_message || json.errors[0].message
+      : "Unknown error";
     throw new Error("Google Visualization API error for " + sheetName + ": " + message);
   }
 
@@ -129,6 +144,29 @@ function renderAll() {
   renderTable("vendorsTable", vendors);
   renderTable("budgetTable", budget);
   renderGuests(guests);
+}
+
+function renderDebug() {
+  const box = document.getElementById("debugBox");
+  if (!box) return;
+
+  const summary = {
+    source: "Google Visualization API",
+    spreadsheetId: CONFIG.spreadsheetId,
+    configuredSheets: CONFIG.sheets,
+    loadedCounts: {
+      events: (DATA.events || []).length,
+      tasks: (DATA.tasks || []).length,
+      rooms: (DATA.rooms || []).length,
+      guests: (DATA.guests || []).length,
+      vendors: (DATA.vendors || []).length,
+      budget: (DATA.budget || []).length,
+      dashboard: (DATA.dashboard || []).length
+    },
+    log: DEBUG
+  };
+
+  box.textContent = JSON.stringify(summary, null, 2);
 }
 
 function setText(id, value) {

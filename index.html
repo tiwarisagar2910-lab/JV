@@ -23,17 +23,18 @@
 
     <main>
       <div class="notice">
-        Source: Google Sheet via Visualization API. Edit the Sheet; refresh this dashboard to see changes.
+        Live source: Google Sheet via Google Visualization API. Edit the Sheet; this dashboard auto-refreshes.
       </div>
+
       <div class="error" id="errorBox"></div>
 
       <section class="tab active" id="Dashboard">
         <div class="grid">
           <div class="card stat"><b>Events</b><strong id="statEvents">0</strong></div>
-          <div class="card stat"><b>Accommodation Rows</b><strong id="statRooms">0</strong></div>
+          <div class="card stat"><b>Accommodation</b><strong id="statRooms">0</strong></div>
           <div class="card stat"><b>Guests</b><strong id="statGuests">0</strong></div>
           <div class="card stat"><b>Vendors</b><strong id="statVendors">0</strong></div>
-          <div class="card stat"><b>Budget Rows</b><strong id="statBudget">0</strong></div>
+          <div class="card stat"><b>Budget</b><strong id="statBudget">0</strong></div>
           <div class="card stat"><b>Tasks</b><strong id="statTasks">0</strong></div>
         </div>
 
@@ -49,10 +50,11 @@
       <section class="tab" id="Guests"><div class="card"><h2>Guests</h2><input class="search" id="guestSearch" placeholder="Search guests, phone, room..." /><div id="guestsTable"></div></div></section>
       <section class="tab" id="Vendors"><div class="card"><h2>Vendors</h2><div id="vendorsTable"></div></div></section>
       <section class="tab" id="Budget"><div class="card"><h2>Budget</h2><div id="budgetTable"></div></div></section>
+      <section class="tab" id="Debug"><div class="card"><h2>Debug</h2><pre id="debugBox">Loading...</pre></div></section>
     </main>
   </div>
 
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script src="config.js?v=visualization-api-v2"></script>
+  <script src="app.js?v=visualization-api-v2"></script>
 </body>
 </html>

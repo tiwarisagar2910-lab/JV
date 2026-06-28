@@ -1,40 +1,35 @@
-# JV Dashboard — Google Visualization API Version
+# JV | Jyoti Weds Vaibhav Dashboard
 
-This version uses Google Visualization API.
+GitHub-ready dashboard using Google Visualization API.
 
-No Apps Script.
-No API key.
-No Google Cloud.
+## No Google Cloud required
+## No API key required
+## No Apps Script required
 
-## Required Google Sheet setting
+## Required Google Sheet sharing
 
-Set the source Google Sheet sharing to:
+Set the Google Sheet to:
 
-- Anyone with the link: Viewer
+Anyone with the link → Viewer
 
-Then separately give Editor access only to trusted family members.
+Give Editor access only to trusted family members.
 
-## Deploy
-
-Upload these files to your GitHub Pages repo:
+## Files to upload to GitHub repo root
 
 - index.html
 - styles.css
 - app.js
 - config.js
 - README.md
+- .nojekyll
 
-Dashboard URL:
+## Live URL
+
 https://tiwarisagar2910-lab.github.io/JV/
 
-## Source sheet tabs
+## Troubleshooting
 
-Configured in config.js:
-
-- Events
-- Guest List
-- Accomodation
-- Vendor list
-- Budget
-- Tasks
-- Dashboard
+Open the dashboard and click the Debug tab. It shows:
+- which sheet tabs were requested
+- how many rows loaded
+- exact error messages
