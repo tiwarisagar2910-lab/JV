@@ -1,10 +1,8 @@
 :root {
   --maroon:#7B1E3B;
   --gold:#D4AF37;
-  --ivory:#FBF7EF;
   --ink:#241820;
   --muted:#746873;
-  --card:#FFFFFF;
   --line:#eadfce;
 }
 
@@ -13,7 +11,7 @@
 body {
   margin:0;
   font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:linear-gradient(135deg,#fffaf0 0%,#f6efe7 100%);
+  background:linear-gradient(135deg,#fffaf0,#f6efe7);
   color:var(--ink);
 }
 
@@ -33,7 +31,7 @@ header {
 
 header h1 { margin:0; font-size:26px; }
 header small { opacity:.9; }
-.sync { text-align:right; font-size:13px; opacity:.95; }
+.sync { text-align:right; font-size:13px; }
 
 .layout {
   display:grid;
@@ -173,19 +171,6 @@ th {
   border-radius:50%;
 }
 
-.room-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:14px;
-}
-
-.room-card {
-  background:white;
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:14px;
-}
-
 .search {
   width:100%;
   max-width:420px;
@@ -194,6 +179,15 @@ th {
   border:1px solid var(--line);
   margin-bottom:14px;
   font-size:15px;
+}
+
+.notice {
+  background:#fff8df;
+  border:1px solid #ead487;
+  color:#684c00;
+  padding:14px;
+  border-radius:14px;
+  margin-bottom:18px;
 }
 
 .error {

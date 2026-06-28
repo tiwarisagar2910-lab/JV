@@ -32,39 +32,14 @@ function initNav() {
 
 async function loadDashboard() {
   try {
-    if (!CONFIG.apiKey || CONFIG.apiKey.includes("PASTE_YOUR")) {
-      throw new Error("Missing Google Sheets API key in config.js");
-    }
-
     document.getElementById("syncStatus").textContent = "Syncing...";
 
-    const rangeEntries = Object.entries(CONFIG.ranges);
-    const rangeParams = rangeEntries
-      .map(([_, range]) => "ranges=" + encodeURIComponent(range))
-      .join("&");
+    const entries = Object.entries(CONFIG.sheets);
+    const results = await Promise.all(
+      entries.map(([key, sheetName]) => loadSheet(sheetName).then(rows => [key, rows]))
+    );
 
-    const url =
-      "https://sheets.googleapis.com/v4/spreadsheets/" +
-      CONFIG.spreadsheetId +
-      "/values:batchGet?" +
-      rangeParams +
-      "&majorDimension=ROWS&key=" +
-      encodeURIComponent(CONFIG.apiKey);
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      const message = await response.text();
-      throw new Error("Google Sheets API HTTP " + response.status + ": " + message);
-    }
-
-    const payload = await response.json();
-
-    DATA = {};
-    payload.valueRanges.forEach((vr, index) => {
-      const key = rangeEntries[index][0];
-      DATA[key] = rowsToObjects(vr.values || []);
-    });
+    DATA = Object.fromEntries(results);
 
     document.getElementById("syncStatus").textContent = "Live connected";
     document.getElementById("lastUpdated").textContent = "Last synced: " + new Date().toLocaleString();
@@ -80,21 +55,56 @@ async function loadDashboard() {
   }
 }
 
-function rowsToObjects(values) {
-  if (!values || values.length < 2) return [];
+async function loadSheet(sheetName) {
+  const url =
+    "https://docs.google.com/spreadsheets/d/" +
+    CONFIG.spreadsheetId +
+    "/gviz/tq?tqx=out:json&sheet=" +
+    encodeURIComponent(sheetName) +
+    "&t=" +
+    Date.now();
 
-  const headers = values[0].map(h => String(h || "").trim());
+  const response = await fetch(url);
 
-  return values
-    .slice(1)
-    .filter(row => row.some(cell => cell !== ""))
+  if (!response.ok) {
+    throw new Error("Could not load sheet tab: " + sheetName + " (HTTP " + response.status + ")");
+  }
+
+  const text = await response.text();
+  return parseGoogleVisualizationResponse(text, sheetName);
+}
+
+function parseGoogleVisualizationResponse(text, sheetName) {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+
+  if (start === -1 || end === -1) {
+    throw new Error("Invalid response from Google Visualization API for tab: " + sheetName);
+  }
+
+  const json = JSON.parse(text.slice(start, end + 1));
+
+  if (json.status === "error") {
+    const message = json.errors && json.errors[0] ? json.errors[0].detailed_message || json.errors[0].message : "Unknown error";
+    throw new Error("Google Visualization API error for " + sheetName + ": " + message);
+  }
+
+  const cols = (json.table.cols || []).map((col, idx) => {
+    return col.label || col.id || ("Column " + (idx + 1));
+  });
+
+  const rows = json.table.rows || [];
+
+  return rows
     .map(row => {
       const obj = {};
-      headers.forEach((header, i) => {
-        if (header) obj[header] = row[i] || "";
+      cols.forEach((header, i) => {
+        const cell = row.c && row.c[i] ? row.c[i] : null;
+        obj[header] = cell ? (cell.f || cell.v || "") : "";
       });
       return obj;
-    });
+    })
+    .filter(row => Object.values(row).some(value => value !== ""));
 }
 
 function renderAll() {
@@ -127,7 +137,7 @@ function setText(id, value) {
 
 function renderTimeline(events) {
   const el = document.getElementById("dashboardTimeline");
-  const list = events.slice(0, 10);
+  const list = events.slice(0, 12);
 
   if (!list.length) {
     el.innerHTML = "<p>No events found yet.</p>";
@@ -136,7 +146,7 @@ function renderTimeline(events) {
 
   el.innerHTML = list.map(e => `
     <div class="event">
-      <h3>${safe(e["Event Name"] || e["Event"] || e["Source Task"] || e["Task"] || "Event")}</h3>
+      <h3>${safe(e["Event Name"] || e["Event"] || e["Source Task"] || e["Task"] || Object.values(e)[0] || "Event")}</h3>
       <div>${safe(e["Day"] || "")} ${safe(e["Date"] || "")} ${safe(e["Time"] || e["Start Time"] || "")}</div>
       <small>${safe(e["Venue"] || e["Stage"] || e["Notes"] || "")}</small>
     </div>
