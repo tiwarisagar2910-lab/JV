@@ -1,20 +1,13 @@
 # JV | Jyoti Weds Vaibhav Dashboard
 
-GitHub-ready dashboard using Google Visualization API.
+This version uses Google Visualization API with JSONP.
 
-## No Google Cloud required
-## No API key required
-## No Apps Script required
+No Google Cloud.
+No API key.
+No Apps Script.
+No browser fetch/CORS issue.
 
-## Required Google Sheet sharing
-
-Set the Google Sheet to:
-
-Anyone with the link → Viewer
-
-Give Editor access only to trusted family members.
-
-## Files to upload to GitHub repo root
+## Upload these files to the root of your GitHub Pages repo
 
 - index.html
 - styles.css
@@ -23,13 +16,14 @@ Give Editor access only to trusted family members.
 - README.md
 - .nojekyll
 
+## Required Google Sheet sharing
+
+Set Google Sheet to:
+
+Anyone with the link → Viewer
+
+Trusted family members can be added separately as Editors.
+
 ## Live URL
 
 https://tiwarisagar2910-lab.github.io/JV/
-
-## Troubleshooting
-
-Open the dashboard and click the Debug tab. It shows:
-- which sheet tabs were requested
-- how many rows loaded
-- exact error messages

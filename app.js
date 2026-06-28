@@ -39,7 +39,7 @@ async function loadDashboard() {
 
     const entries = Object.entries(CONFIG.sheets);
     const results = await Promise.all(
-      entries.map(([key, sheetName]) => loadSheet(sheetName).then(rows => [key, rows]))
+      entries.map(([key, sheetName]) => loadSheetJsonp(sheetName).then(rows => [key, rows]))
     );
 
     DATA = Object.fromEntries(results);
@@ -55,50 +55,76 @@ async function loadDashboard() {
 
     const box = document.getElementById("errorBox");
     box.style.display = "block";
-    box.textContent = error.message;
+    box.textContent = error.message || "Load failed";
 
-    DEBUG.push({ type: "error", message: error.message });
+    DEBUG.push({ type: "error", message: error.message || "Load failed" });
     renderDebug();
   }
 }
 
-async function loadSheet(sheetName) {
-  const url =
-    "https://docs.google.com/spreadsheets/d/" +
-    CONFIG.spreadsheetId +
-    "/gviz/tq?tqx=out:json&sheet=" +
-    encodeURIComponent(sheetName) +
-    "&t=" +
-    Date.now();
+function loadSheetJsonp(sheetName) {
+  return new Promise((resolve, reject) => {
+    const callbackName = "jvGviz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
 
-  DEBUG.push({ type: "request", sheetName, url });
+    const url =
+      "https://docs.google.com/spreadsheets/d/" +
+      CONFIG.spreadsheetId +
+      "/gviz/tq?tqx=" +
+      encodeURIComponent("out:json;responseHandler:" + callbackName) +
+      "&sheet=" +
+      encodeURIComponent(sheetName) +
+      "&t=" +
+      Date.now();
 
-  const response = await fetch(url, { cache: "no-store" });
+    DEBUG.push({ type: "request", sheetName, url });
 
-  if (!response.ok) {
-    throw new Error("Could not load sheet tab: " + sheetName + " (HTTP " + response.status + ")");
-  }
+    let done = false;
+    const script = document.createElement("script");
 
-  const text = await response.text();
-  const rows = parseGoogleVisualizationResponse(text, sheetName);
+    const timeout = setTimeout(() => {
+      if (done) return;
+      done = true;
+      cleanup();
+      reject(new Error("Timed out loading sheet tab: " + sheetName));
+    }, 15000);
 
-  DEBUG.push({ type: "success", sheetName, rowCount: rows.length });
+    window[callbackName] = function(payload) {
+      if (done) return;
+      done = true;
+      clearTimeout(timeout);
 
-  return rows;
+      try {
+        const rows = parseGoogleVisualizationPayload(payload, sheetName);
+        DEBUG.push({ type: "success", sheetName, rowCount: rows.length });
+        resolve(rows);
+      } catch (err) {
+        reject(err);
+      } finally {
+        cleanup();
+      }
+    };
+
+    script.onerror = function() {
+      if (done) return;
+      done = true;
+      clearTimeout(timeout);
+      cleanup();
+      reject(new Error("Script load failed for sheet tab: " + sheetName));
+    };
+
+    function cleanup() {
+      try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    script.src = url;
+    document.body.appendChild(script);
+  });
 }
 
-function parseGoogleVisualizationResponse(text, sheetName) {
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-
-  if (start === -1 || end === -1) {
-    throw new Error("Invalid response from Google Visualization API for tab: " + sheetName);
-  }
-
-  const json = JSON.parse(text.slice(start, end + 1));
-
-  if (json.status === "error") {
-    const message = json.errors && json.errors[0]
+function parseGoogleVisualizationPayload(json, sheetName) {
+  if (!json || json.status === "error") {
+    const message = json && json.errors && json.errors[0]
       ? json.errors[0].detailed_message || json.errors[0].message
       : "Unknown error";
     throw new Error("Google Visualization API error for " + sheetName + ": " + message);
@@ -151,7 +177,8 @@ function renderDebug() {
   if (!box) return;
 
   const summary = {
-    source: "Google Visualization API",
+    version: "visualization-api-jsonp-v3",
+    source: "Google Visualization API JSONP",
     spreadsheetId: CONFIG.spreadsheetId,
     configuredSheets: CONFIG.sheets,
     loadedCounts: {
