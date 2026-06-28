@@ -1,35 +1,26 @@
-# JV | Jyoti Weds Vaibhav Dashboard
+# JV Dashboard — Google Sheets API Version
 
-This is a static live dashboard connected to your Google Sheet via Google Apps Script.
+This version removes Apps Script and reads the Google Sheet directly through the official Google Sheets API.
 
-## Files
+## Setup
 
-- `index.html` — main dashboard page
-- `styles.css` — visual design
-- `app.js` — dashboard logic
-- `config.js` — Apps Script API URL
+1. In Google Cloud Console, create/select a project.
+2. Enable **Google Sheets API**.
+3. Create an **API key**.
+4. Restrict the API key:
+   - Application restriction: HTTP referrers
+   - Add: `https://tiwarisagar2910-lab.github.io/*`
+   - API restriction: Google Sheets API
+5. In `config.js`, replace:
+   `PASTE_YOUR_GOOGLE_SHEETS_API_KEY_HERE`
+   with your API key.
+6. Commit/push these files to GitHub Pages.
 
-## How to run locally
+## Important
 
-Open this folder in Terminal and run:
+Your Google Sheet must be viewable by the API key. For a public wedding dashboard, the simplest setup is:
+- Share the Google Sheet as **Anyone with the link can view**
+- Only give edit access to trusted family members separately
 
-```bash
-python3 -m http.server 8080
-```
-
-Then open:
-
-```text
-http://localhost:8080
-```
-
-Do not use `file://` if the browser blocks API requests.
-
-## How to deploy
-
-Upload these files to GitHub Pages, Netlify, or Vercel.
-
-## Data source
-
-Google Apps Script Web App:
-https://script.google.com/macros/s/AKfycbyq62KADMRurvs1rF7kxeK-M9R_Hi5umuNqa4klVcgP1omWu60Csaoqas8FydJGY79WWQ/exec
+Dashboard URL:
+https://tiwarisagar2910-lab.github.io/JV/

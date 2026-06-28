@@ -2,15 +2,13 @@ let DATA = {
   events: [],
   tasks: [],
   rooms: [],
-  meals: [],
   guests: [],
   vendors: [],
   budget: [],
-  dashboard: [],
-  metadata: []
+  dashboard: []
 };
 
-const tabs = ["Dashboard", "Events", "Tasks", "Accommodation", "Meals", "Guests", "Vendors", "Budget"];
+const tabs = ["Dashboard", "Events", "Tasks", "Accommodation", "Guests", "Vendors", "Budget"];
 
 function initNav() {
   const nav = document.getElementById("nav");
@@ -34,15 +32,39 @@ function initNav() {
 
 async function loadDashboard() {
   try {
-    document.getElementById("syncStatus").textContent = "Syncing...";
-
-    const response = await fetch(CONFIG.apiUrl + "?v=" + Date.now());
-
-    if (!response.ok) {
-      throw new Error("API returned HTTP " + response.status);
+    if (!CONFIG.apiKey || CONFIG.apiKey.includes("PASTE_YOUR")) {
+      throw new Error("Missing Google Sheets API key in config.js");
     }
 
-    DATA = await response.json();
+    document.getElementById("syncStatus").textContent = "Syncing...";
+
+    const rangeEntries = Object.entries(CONFIG.ranges);
+    const rangeParams = rangeEntries
+      .map(([_, range]) => "ranges=" + encodeURIComponent(range))
+      .join("&");
+
+    const url =
+      "https://sheets.googleapis.com/v4/spreadsheets/" +
+      CONFIG.spreadsheetId +
+      "/values:batchGet?" +
+      rangeParams +
+      "&majorDimension=ROWS&key=" +
+      encodeURIComponent(CONFIG.apiKey);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error("Google Sheets API HTTP " + response.status + ": " + message);
+    }
+
+    const payload = await response.json();
+
+    DATA = {};
+    payload.valueRanges.forEach((vr, index) => {
+      const key = rangeEntries[index][0];
+      DATA[key] = rowsToObjects(vr.values || []);
+    });
 
     document.getElementById("syncStatus").textContent = "Live connected";
     document.getElementById("lastUpdated").textContent = "Last synced: " + new Date().toLocaleString();
@@ -54,15 +76,31 @@ async function loadDashboard() {
 
     const box = document.getElementById("errorBox");
     box.style.display = "block";
-    box.textContent = "Could not load Google Sheet data: " + error.message;
+    box.textContent = error.message;
   }
+}
+
+function rowsToObjects(values) {
+  if (!values || values.length < 2) return [];
+
+  const headers = values[0].map(h => String(h || "").trim());
+
+  return values
+    .slice(1)
+    .filter(row => row.some(cell => cell !== ""))
+    .map(row => {
+      const obj = {};
+      headers.forEach((header, i) => {
+        if (header) obj[header] = row[i] || "";
+      });
+      return obj;
+    });
 }
 
 function renderAll() {
   const events = DATA.events || [];
   const tasks = DATA.tasks || [];
   const rooms = DATA.rooms || [];
-  const meals = DATA.meals || [];
   const guests = DATA.guests || [];
   const vendors = DATA.vendors || [];
   const budget = DATA.budget || [];
@@ -70,15 +108,14 @@ function renderAll() {
   setText("statEvents", events.length);
   setText("statTasks", tasks.length);
   setText("statRooms", rooms.length);
-  setText("statMeals", meals.length);
   setText("statGuests", guests.length);
   setText("statVendors", vendors.length);
+  setText("statBudget", budget.length);
 
   renderTimeline(events);
   renderTable("eventsTable", events);
   renderTable("tasksTable", tasks);
-  renderRooms(rooms);
-  renderTable("mealsTable", meals);
+  renderTable("roomsTable", rooms);
   renderTable("vendorsTable", vendors);
   renderTable("budgetTable", budget);
   renderGuests(guests);
@@ -99,29 +136,9 @@ function renderTimeline(events) {
 
   el.innerHTML = list.map(e => `
     <div class="event">
-      <h3>${safe(e["Event Name"] || e["Event"] || e["Source Task"] || "Event")}</h3>
+      <h3>${safe(e["Event Name"] || e["Event"] || e["Source Task"] || e["Task"] || "Event")}</h3>
       <div>${safe(e["Day"] || "")} ${safe(e["Date"] || "")} ${safe(e["Time"] || e["Start Time"] || "")}</div>
       <small>${safe(e["Venue"] || e["Stage"] || e["Notes"] || "")}</small>
-    </div>
-  `).join("");
-}
-
-function renderRooms(rooms) {
-  const el = document.getElementById("roomsGrid");
-
-  if (!rooms.length) {
-    el.innerHTML = "<p>No rooms found yet.</p>";
-    return;
-  }
-
-  el.innerHTML = rooms.map(r => `
-    <div class="room-card">
-      <h3>${safe(r["Room ID"] || r["Room Number"] || r["Room Type"] || "Room")}</h3>
-      <div><b>Floor:</b> ${safe(r["Floor"] || "")}</div>
-      <div><b>Type:</b> ${safe(r["Room Type"] || "")}</div>
-      <div><b>Qty:</b> ${safe(r["Qty"] || "")}</div>
-      <div><b>Capacity:</b> ${safe(r["Capacity"] || "")}</div>
-      <div><b>Day:</b> ${safe(r["Day"] || "")}</div>
     </div>
   `).join("");
 }
