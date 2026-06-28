@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JV | Jyoti Weds Vaibhav</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1>💍 JV | Jyoti Weds Vaibhav</h1>
+      <small>Live Wedding Operations Dashboard</small>
+    </div>
+    <div class="sync">
+      <div id="syncStatus">Connecting...</div>
+      <div id="lastUpdated">Waiting for Google Sheet</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav id="nav"></nav>
+
+    <main>
+      <div class="error" id="errorBox"></div>
+
+      <section class="tab active" id="Dashboard">
+        <div class="grid">
+          <div class="card stat"><b>Events</b><strong id="statEvents">0</strong></div>
+          <div class="card stat"><b>Rooms</b><strong id="statRooms">0</strong></div>
+          <div class="card stat"><b>Guests</b><strong id="statGuests">0</strong></div>
+          <div class="card stat"><b>Vendors</b><strong id="statVendors">0</strong></div>
+          <div class="card stat"><b>Meals</b><strong id="statMeals">0</strong></div>
+          <div class="card stat"><b>Tasks</b><strong id="statTasks">0</strong></div>
+        </div>
+
+        <div class="card">
+          <h2>Upcoming Timeline</h2>
+          <div class="timeline" id="dashboardTimeline"></div>
+        </div>
+      </section>
+
+      <section class="tab" id="Events"><div class="card"><h2>Events</h2><div id="eventsTable"></div></div></section>
+      <section class="tab" id="Tasks"><div class="card"><h2>Master Checklist / Tasks</h2><div id="tasksTable"></div></div></section>
+      <section class="tab" id="Accommodation"><div class="card"><h2>Accommodation</h2><div class="room-grid" id="roomsGrid"></div></div></section>
+      <section class="tab" id="Meals"><div class="card"><h2>Meals</h2><div id="mealsTable"></div></div></section>
+      <section class="tab" id="Guests"><div class="card"><h2>Guests</h2><input class="search" id="guestSearch" placeholder="Search guests, phone, room..." /><div id="guestsTable"></div></div></section>
+      <section class="tab" id="Vendors"><div class="card"><h2>Vendors</h2><div id="vendorsTable"></div></div></section>
+      <section class="tab" id="Budget"><div class="card"><h2>Budget</h2><div id="budgetTable"></div></div></section>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

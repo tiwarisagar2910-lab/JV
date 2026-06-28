@@ -1,0 +1,225 @@
+:root {
+  --maroon:#7B1E3B;
+  --gold:#D4AF37;
+  --ivory:#FBF7EF;
+  --ink:#241820;
+  --muted:#746873;
+  --card:#FFFFFF;
+  --line:#eadfce;
+}
+
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:linear-gradient(135deg,#fffaf0 0%,#f6efe7 100%);
+  color:var(--ink);
+}
+
+header {
+  background:linear-gradient(135deg,var(--maroon),#461023);
+  color:#fff;
+  padding:22px 28px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 8px 30px rgba(0,0,0,.18);
+}
+
+header h1 { margin:0; font-size:26px; }
+header small { opacity:.9; }
+.sync { text-align:right; font-size:13px; opacity:.95; }
+
+.layout {
+  display:grid;
+  grid-template-columns:250px 1fr;
+  min-height:calc(100vh - 82px);
+}
+
+nav {
+  background:#1f171d;
+  color:white;
+  padding:18px;
+  position:sticky;
+  top:82px;
+  height:calc(100vh - 82px);
+  overflow:auto;
+}
+
+nav button {
+  display:block;
+  width:100%;
+  border:0;
+  color:white;
+  background:transparent;
+  padding:12px 14px;
+  border-radius:12px;
+  text-align:left;
+  cursor:pointer;
+  margin-bottom:7px;
+  font-size:15px;
+}
+
+nav button.active,
+nav button:hover {
+  background:var(--gold);
+  color:#231408;
+  font-weight:700;
+}
+
+main { padding:24px; overflow:auto; }
+.tab { display:none; }
+.tab.active { display:block; }
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:16px;
+  margin-bottom:20px;
+}
+
+.card {
+  background:rgba(255,255,255,.9);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 12px 32px rgba(123,30,59,.08);
+  margin-bottom:18px;
+}
+
+.stat {
+  min-height:110px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+.stat b {
+  color:var(--muted);
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.stat strong {
+  font-size:34px;
+  color:var(--maroon);
+}
+
+h2 { margin:0 0 14px; color:var(--maroon); }
+h3 { margin:0 0 10px; }
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  border-radius:14px;
+  overflow:hidden;
+}
+
+th, td {
+  padding:11px 12px;
+  border-bottom:1px solid #eee4d8;
+  text-align:left;
+  font-size:14px;
+  vertical-align:top;
+}
+
+th {
+  background:#f5eadb;
+  color:#4a2432;
+}
+
+.pill {
+  display:inline-block;
+  padding:4px 9px;
+  border-radius:999px;
+  background:#f1e7d8;
+  font-size:12px;
+  font-weight:700;
+}
+
+.status-completed { background:#dcfce7; color:#166534; }
+.status-in-progress { background:#fef3c7; color:#92400e; }
+.status-pending,
+.status-planned,
+.status-not-started { background:#f1e7d8; color:#5a3920; }
+.status-cancelled { background:#fee2e2; color:#991b1b; }
+
+.timeline {
+  border-left:4px solid var(--gold);
+  padding-left:18px;
+}
+
+.event {
+  position:relative;
+  padding:0 0 18px 0;
+}
+
+.event:before {
+  content:"";
+  position:absolute;
+  left:-28px;
+  top:4px;
+  width:14px;
+  height:14px;
+  background:var(--maroon);
+  border:3px solid var(--gold);
+  border-radius:50%;
+}
+
+.room-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:14px;
+}
+
+.room-card {
+  background:white;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px;
+}
+
+.search {
+  width:100%;
+  max-width:420px;
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  margin-bottom:14px;
+  font-size:15px;
+}
+
+.error {
+  background:#fff1f1;
+  border:1px solid #fecaca;
+  color:#7f1d1d;
+  padding:14px;
+  border-radius:14px;
+  margin-bottom:18px;
+  display:none;
+}
+
+@media(max-width:800px) {
+  header { display:block; }
+  .sync { text-align:left; margin-top:8px; }
+  .layout { grid-template-columns:1fr; }
+  nav {
+    position:relative;
+    top:auto;
+    height:auto;
+    display:flex;
+    overflow:auto;
+    gap:8px;
+  }
+  nav button {
+    white-space:nowrap;
+    margin-bottom:0;
+  }
+}
