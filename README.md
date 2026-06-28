@@ -1,13 +1,12 @@
 # JV | Jyoti Weds Vaibhav Dashboard
 
-This version uses Google Visualization API with JSONP.
+Sequential JSONP version.
 
 No Google Cloud.
 No API key.
 No Apps Script.
-No browser fetch/CORS issue.
 
-## Upload these files to the root of your GitHub Pages repo
+## Upload all files to GitHub repo root
 
 - index.html
 - styles.css
@@ -16,14 +15,17 @@ No browser fetch/CORS issue.
 - README.md
 - .nojekyll
 
-## Required Google Sheet sharing
+## Important
 
-Set Google Sheet to:
-
+Set Google Sheet sharing to:
 Anyone with the link → Viewer
 
-Trusted family members can be added separately as Editors.
+Then give Editor access separately to trusted family members.
 
-## Live URL
+## Cache busting
 
-https://tiwarisagar2910-lab.github.io/JV/
+Open:
+https://tiwarisagar2910-lab.github.io/JV/?v=sequential-v4
+
+Hard refresh if needed:
+Cmd + Shift + R

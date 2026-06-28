@@ -33,33 +33,43 @@ function initNav() {
 }
 
 async function loadDashboard() {
-  try {
-    DEBUG = [];
-    document.getElementById("syncStatus").textContent = "Syncing...";
+  DEBUG = [];
+  document.getElementById("syncStatus").textContent = "Syncing...";
 
-    const entries = Object.entries(CONFIG.sheets);
-    const results = await Promise.all(
-      entries.map(([key, sheetName]) => loadSheetJsonp(sheetName).then(rows => [key, rows]))
-    );
+  const entries = Object.entries(CONFIG.sheets);
+  const results = [];
 
-    DATA = Object.fromEntries(results);
-
-    document.getElementById("syncStatus").textContent = "Live connected";
-    document.getElementById("lastUpdated").textContent = "Last synced: " + new Date().toLocaleString();
-    document.getElementById("errorBox").style.display = "none";
-
-    renderAll();
-    renderDebug();
-  } catch (error) {
-    document.getElementById("syncStatus").textContent = "Sync failed";
-
-    const box = document.getElementById("errorBox");
-    box.style.display = "block";
-    box.textContent = error.message || "Load failed";
-
-    DEBUG.push({ type: "error", message: error.message || "Load failed" });
-    renderDebug();
+  for (const [key, sheetName] of entries) {
+    try {
+      const rows = await loadSheetJsonp(sheetName);
+      results.push([key, rows]);
+    } catch (error) {
+      DEBUG.push({
+        type: "sheet-error",
+        sheetName,
+        message: error.message || "Load failed"
+      });
+      results.push([key, []]);
+    }
   }
+
+  DATA = Object.fromEntries(results);
+
+  document.getElementById("syncStatus").textContent = "Live connected";
+  document.getElementById("lastUpdated").textContent = "Last synced: " + new Date().toLocaleString();
+
+  const failedSheets = DEBUG.filter(item => item.type === "sheet-error");
+  const box = document.getElementById("errorBox");
+
+  if (failedSheets.length) {
+    box.style.display = "block";
+    box.textContent = "Some tabs failed to load: " + failedSheets.map(x => x.sheetName).join(", ");
+  } else {
+    box.style.display = "none";
+  }
+
+  renderAll();
+  renderDebug();
 }
 
 function loadSheetJsonp(sheetName) {
@@ -86,7 +96,7 @@ function loadSheetJsonp(sheetName) {
       done = true;
       cleanup();
       reject(new Error("Timed out loading sheet tab: " + sheetName));
-    }, 15000);
+    }, 20000);
 
     window[callbackName] = function(payload) {
       if (done) return;
@@ -177,8 +187,8 @@ function renderDebug() {
   if (!box) return;
 
   const summary = {
-    version: "visualization-api-jsonp-v3",
-    source: "Google Visualization API JSONP",
+    version: "visualization-api-sequential-v4",
+    source: "Google Visualization API JSONP sequential",
     spreadsheetId: CONFIG.spreadsheetId,
     configuredSheets: CONFIG.sheets,
     loadedCounts: {
